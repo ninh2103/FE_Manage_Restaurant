@@ -40,6 +40,7 @@ import { useUploadMediaMutation } from "@/queries/useMedia";
 import { useAddDishMutation } from "@/queries/useDish";
 import { toast } from "@/components/ui/use-toast";
 import { Value } from "@radix-ui/react-select";
+import revalidateApiRequest from "@/apiRequest/revalidate";
 
 export default function AddDish() {
   const uploadMediaMutation = useUploadMediaMutation();
@@ -85,6 +86,7 @@ export default function AddDish() {
         };
       }
       const result = await addDishMutation.mutateAsync(body);
+      await revalidateApiRequest("dishes");
       toast({
         description: result.payload.message,
       });

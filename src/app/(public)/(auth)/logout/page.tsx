@@ -11,7 +11,7 @@ import React, { Suspense, useEffect, useRef } from "react";
 function Logout() {
   const { mutateAsync } = useLogoutMutation();
   const router = useRouter();
-  const { setIsAuth } = useAppContext();
+  const { setRole } = useAppContext();
   const searchParams = useSearchParams();
   const refreshTokenFromUrl = searchParams.get("refreshToken");
   const accessTokenTokenFromUrl = searchParams.get("accessToken");
@@ -30,7 +30,7 @@ function Logout() {
         setTimeout(() => {
           ref.current = null;
         }, 1000);
-        setIsAuth(false);
+        setRole();
         router.push("/login");
       });
     } else {
@@ -41,7 +41,7 @@ function Logout() {
     router,
     refreshTokenFromUrl,
     accessTokenTokenFromUrl,
-    setIsAuth,
+    setRole,
   ]);
   return <div>Logout...</div>;
 }
