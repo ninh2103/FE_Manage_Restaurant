@@ -52,3 +52,5 @@ export const OrderStatusValues = [
   OrderStatus.Delivered,
   OrderStatus.Paid,
 ] as const;
+
+export const ManagerRoom = "manager" as const;
