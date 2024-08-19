@@ -134,7 +134,7 @@ export function DishesDialog({
       <DialogTrigger asChild>
         <Button variant="outline">Thay đổi</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-full overflow-auto">
         <DialogHeader>
           <DialogTitle>Chọn món ăn</DialogTitle>
         </DialogHeader>
@@ -217,7 +217,13 @@ export function DishesDialog({
                 <AutoPagination
                   page={table.getState().pagination.pageIndex + 1}
                   pageSize={table.getPageCount()}
-                  pathname="/manage/dishes"
+                  onClick={(pageNumber) =>
+                    table.setPagination({
+                      pageIndex: pageNumber - 1,
+                      pageSize: PAGE_SIZE,
+                    })
+                  }
+                  isLink={false}
                 />
               </div>
             </div>

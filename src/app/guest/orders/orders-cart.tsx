@@ -2,10 +2,14 @@
 
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
+import { OrderStatus } from "@/constants/type";
 import socket from "@/lib/socket";
 import { formatCurrency, getVietnameseOrderStatus } from "@/lib/utils";
 import { useGuestGetListOrderQuery } from "@/queries/useGuest";
-import { UpdateOrderResType } from "@/schemaValidations/order.schema";
+import {
+  PayGuestOrdersResType,
+  UpdateOrderResType,
+} from "@/schemaValidations/order.schema";
 import Image from "next/image";
 import { useEffect, useMemo } from "react";
 
@@ -13,10 +17,45 @@ export default function OrdersCart() {
   const { data, refetch } = useGuestGetListOrderQuery();
   const orders = useMemo(() => data?.payload.data ?? [], [data]);
 
-  const totalPrice = useMemo(() => {
-    return orders.reduce((result, order) => {
-      return result + order.quantity * order.dishSnapshot.price;
-    }, 0);
+  const { waitingForPaying, paid } = useMemo(() => {
+    return orders.reduce(
+      (result, order) => {
+        if (
+          order.status === OrderStatus.Delivered ||
+          order.status === OrderStatus.Pending ||
+          order.status === OrderStatus.Processing
+        ) {
+          return {
+            ...result,
+            waitingForPaying: {
+              price:
+                result.paid.price + order.dishSnapshot.price * order.quantity,
+              quantity: result.paid.quantity + order.quantity,
+            },
+          };
+        } else if (order.status === OrderStatus.Paid) {
+          return {
+            ...result,
+            paid: {
+              price:
+                result.paid.price + order.dishSnapshot.price * order.quantity,
+              quantity: result.paid.quantity + order.quantity,
+            },
+          };
+        }
+        return result;
+      },
+      {
+        waitingForPaying: {
+          quantity: 0,
+          price: 0,
+        },
+        paid: {
+          quantity: 0,
+          price: 0,
+        },
+      }
+    );
   }, [orders]);
 
   useEffect(() => {
@@ -45,8 +84,17 @@ export default function OrdersCart() {
       });
       refetch();
     }
+    function onPayment(data: PayGuestOrdersResType["data"]) {
+      const { guest } = data[0];
+
+      toast({
+        description: `${guest?.name} tại bàn ${guest?.tableNumber} thanh toán thành công ${data.length} đơn.`,
+      });
+      refetch();
+    }
 
     socket.on("update-order", onUpdateOrder);
+    socket.on("payment", onPayment);
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
@@ -55,6 +103,7 @@ export default function OrdersCart() {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("update-order", onUpdateOrder);
+      socket.off("payment", onPayment);
     };
   }, [refetch]);
   return (
@@ -84,12 +133,30 @@ export default function OrdersCart() {
           </div>
         </div>
       ))}
-      <div className="sticky bottom-0   ">
-        <Badge className="text-xl justify-center items-center flex space-x-4">
-          <span>Tổng tiền · {orders.length} món</span>
-          <span>{formatCurrency(totalPrice)}</span>
-        </Badge>
-      </div>
+      {paid.quantity !== 0 && (
+        <div className="sticky bottom-0">
+          <Badge className="text-sm justify-center items-center flex space-x-4">
+            <span>Đơn Đã Thanh Toán · {paid.quantity} món</span>
+            <span>{formatCurrency(paid.price)}</span>
+          </Badge>
+        </div>
+      )}
+      {waitingForPaying.quantity !== 0 && (
+        <div className="sticky bottom-0">
+          <Badge className="text-sm justify-center items-center flex space-x-4">
+            <span>Đơn Chưa Thanh Toán · {waitingForPaying.quantity} món</span>
+            <span>{formatCurrency(waitingForPaying.price)}</span>
+          </Badge>
+        </div>
+      )}
+      {waitingForPaying.quantity === 0 && paid.quantity === 0 && (
+        <div className="sticky bottom-0">
+          <Badge className="text-sm flex flex-col space-y-1">
+            <span>Chưa Có Đơn Hàng Nào Được Đặt.</span>
+            <span>Chọn Vào Menu Để Đặt Món!</span>
+          </Badge>
+        </div>
+      )}
     </>
   );
 }
