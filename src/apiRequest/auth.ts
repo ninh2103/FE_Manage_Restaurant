@@ -6,7 +6,6 @@ import {
   RefreshTokenBodyType,
   RefreshTokenResType,
 } from "@/schemaValidations/auth.schema";
-import { number } from "zod";
 
 const authApiRequest = {
   refreshTokenRequest: null as Promise<{

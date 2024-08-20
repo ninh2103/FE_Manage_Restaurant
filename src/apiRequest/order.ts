@@ -20,8 +20,8 @@ const orderApiRequest = {
     http.get<GetOrdersResType>(
       "/orders?" +
         queryString.stringify({
-          FormDate: queryParams.fromDate?.toISOString(),
-          todate: queryParams.toDate?.toISOString(),
+          fromDate: queryParams.fromDate?.toISOString(),
+          toDate: queryParams.toDate?.toISOString(),
         })
     ),
   updateOrder: (orderId: number, body: UpdateOrderBodyType) =>
