@@ -5,6 +5,8 @@ import type { NextRequest } from "next/server";
 
 const managePaths = ["/manage"];
 const guestPaths = ["/guest"];
+const onlyOwnerPaths = ["/manage/accounts"];
+
 const privatePaths = [...managePaths, ...guestPaths];
 const unAuthPaths = ["/login"];
 
@@ -27,7 +29,10 @@ export function middleware(request: NextRequest) {
     }
 
     // 3. Nếu không có accessToken, chuyển hướng đến trang refresh-token
-    if (privatePaths.some((path) => pathname.startsWith(path)) && !accessToken) {
+    if (
+      privatePaths.some((path) => pathname.startsWith(path)) &&
+      !accessToken
+    ) {
       const url = new URL("/refresh-token", request.url);
       url.searchParams.set("refreshToken", refreshToken);
       url.searchParams.set("redirect", pathname);
@@ -45,8 +50,16 @@ export function middleware(request: NextRequest) {
       role !== Role.Guest &&
       guestPaths.some((path) => pathname.startsWith(path));
 
+    const isNotOwnerGoToOwnerPath =
+      role !== Role.Owner &&
+      onlyOwnerPaths.some((path) => pathname.startsWith(path));
+
     // Nếu khách vào đường dẫn quản lý hoặc không phải khách mà vào đường dẫn dành cho khách
-    if (isGuestGoToManagePath || isNotGuestGoToGuestPath) {
+    if (
+      isGuestGoToManagePath ||
+      isNotGuestGoToGuestPath ||
+      isNotOwnerGoToOwnerPath
+    ) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }

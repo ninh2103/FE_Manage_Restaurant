@@ -15,10 +15,11 @@ import { useEffect } from "react";
 import { useGuestLoginMutation } from "@/queries/useGuest";
 import { useAppContext } from "@/components/app-provider";
 import { handleErrorApi } from "@/lib/utils";
+import { generateSocketInstace } from "@/lib/common";
 
 export default function GuestLoginForm() {
   const loginMutation = useGuestLoginMutation();
-  const { setRole } = useAppContext();
+  const { setRole, setSocket } = useAppContext();
   const searchParams = useSearchParams();
   const params = useParams();
   const tableNumber = Number(params.number);
@@ -43,6 +44,7 @@ export default function GuestLoginForm() {
     try {
       const result = await loginMutation.mutateAsync(values);
       setRole(result.payload.data.guest.role);
+      setSocket(generateSocketInstace(result.payload.data.accessToken));
       router.push("/guest/menu");
     } catch (error) {
       handleErrorApi({

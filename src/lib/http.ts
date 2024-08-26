@@ -4,6 +4,7 @@ import {
   normalizePath,
   removeTokensFromLocalStorage,
   setAccessTokenToLocalStorage,
+  setRefreshTokenToLocalStorage,
 } from "@/lib/utils";
 import { LoginResType } from "@/schemaValidations/auth.schema";
 import { redirect } from "next/navigation";
@@ -154,11 +155,17 @@ const request = async <Response>(
     const normalizeUrl = normalizePath(url);
     if (["api/auth/login", "api/guest/auth/login"].includes(normalizeUrl)) {
       const { accessToken, refreshToken } = (payload as LoginResType).data;
-      setAccessTokenToLocalStorage(refreshToken);
+      setRefreshTokenToLocalStorage(refreshToken);
       setAccessTokenToLocalStorage(accessToken);
-    } else if (
-      ["api/auth/logout", "api/guest/auth/logout"].includes(normalizeUrl)
-    ) {
+    } else if ("api/auth/token" === normalizeUrl) {
+      const { accessToken, refreshToken } = payload as {
+        accessToken: string;
+        refreshToken: string;
+      };
+      setAccessTokenToLocalStorage(accessToken);
+      setRefreshTokenToLocalStorage(refreshToken);
+    }
+    if (["api/auth/logout", "api/guest/auth/logout"].includes(normalizeUrl)) {
       removeTokensFromLocalStorage();
     }
   }

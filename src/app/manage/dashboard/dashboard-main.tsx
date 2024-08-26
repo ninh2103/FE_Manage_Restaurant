@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useGetDashboardQuery } from "@/queries/useDashboard";
 import { useState } from "react";
 import { endOfDay, format, startOfDay } from "date-fns";
+import { formatCurrency } from "@/lib/utils";
 
 const initFromDate = startOfDay(new Date());
 const initToDate = endOfDay(new Date());
@@ -17,14 +18,7 @@ export default function DashboardMain() {
 
   const dashboardQuery = useGetDashboardQuery({ fromDate, toDate });
   const revenueData = dashboardQuery.data?.payload.data.revenueByDate ?? [];
-  const dishData = (dashboardQuery.data?.payload.data.dishIndicator ?? []).map(
-    (dish) => ({
-      id: dish.id,
-      name: dish.name,
-      successOrders: dish.successOrders,
-      fill: "var(--color-default)",
-    })
-  );
+  const dishData = dashboardQuery.data?.payload.data.dishIndicator ?? [];
 
   const resetDateFilter = () => {
     setFromDate(initFromDate);
@@ -67,7 +61,9 @@ export default function DashboardMain() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardQuery.data?.payload.data.revenue}
+              {formatCurrency(
+                dashboardQuery.data?.payload.data.revenue as number
+              )}
             </div>
           </CardContent>
         </Card>
@@ -111,10 +107,10 @@ export default function DashboardMain() {
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="lg:col-span-4">
-          <RevenueLineChart data={revenueData} />
+          <RevenueLineChart chartData={revenueData} />
         </div>
         <div className="lg:col-span-3">
-          <DishBarChart data={dishData} />
+          <DishBarChart chartData={dishData} />
         </div>
       </div>
     </div>

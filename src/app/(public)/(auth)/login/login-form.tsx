@@ -19,13 +19,34 @@ import { handleErrorApi, removeTokensFromLocalStorage } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { useAppContext } from "@/components/app-provider";
+import envConfig from "@/config";
+import { io } from "socket.io-client";
+import { generateSocketInstace } from "@/lib/common";
+import Link from "next/link";
 
 export default function LoginForm() {
+  const getOauthGoogleUrl = () => {
+    const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+    const options = {
+      redirect_uri: envConfig.NEXT_PUBLIC_GOOGLE_AUTHORIZED_REDIRECT_URI,
+      client_id: envConfig.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+      access_type: "offline",
+      response_type: "code",
+      prompt: "consent",
+      scope: [
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email",
+      ].join(" "),
+    };
+    const qs = new URLSearchParams(options);
+    return `${rootUrl}?${qs.toString()}`;
+  };
+  const gogleOauthUrl = getOauthGoogleUrl();
   const loginMutation = useLoginMutation();
   const searchParams = useSearchParams();
   const clearToken = searchParams.get("clearTokens");
-  const { setRole } = useAppContext();
-  const route = useRouter();
+  const { setRole, setSocket } = useAppContext();
+  const router = useRouter();
   useEffect(() => {
     if (clearToken) {
       setRole();
@@ -47,7 +68,8 @@ export default function LoginForm() {
         description: result.payload.message,
       });
       setRole(result.payload.data.account.role);
-      route.push("/manage/dashboard");
+      setSocket(generateSocketInstace(result.payload.data.accessToken));
+      router.push("/manage/dashboard");
     } catch (error: any) {
       handleErrorApi({
         error,
@@ -116,9 +138,11 @@ export default function LoginForm() {
               <Button type="submit" className="w-full">
                 Đăng nhập
               </Button>
-              <Button variant="outline" className="w-full" type="button">
-                Đăng nhập bằng Google
-              </Button>
+              <Link href={gogleOauthUrl}>
+                <Button variant="outline" className="w-full" type="button">
+                  Đăng nhập bằng Google
+                </Button>
+              </Link>
             </div>
           </form>
         </Form>

@@ -1,5 +1,8 @@
 "use client";
+
+import { TrendingUp } from "lucide-react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
+
 import {
   Card,
   CardContent,
@@ -14,15 +17,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { DashboardIndicatorResType } from "@/schemaValidations/indicator.schema";
+import { useMemo } from "react";
 
-interface DishBarChartProps {
-  data: {
-    id: number;
-    name: string;
-    successOrders: number;
-    fill: string;
-  }[];
-}
+const colors = ["#FF5733", "#C70039", "#FFC300", "#28B463", "#1F618D"];
 
 const chartConfig = {
   visitors: {
@@ -50,7 +48,24 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function DishBarChart({ data }: DishBarChartProps) {
+export function DishBarChart({
+  chartData,
+}: {
+  chartData: Pick<
+    DashboardIndicatorResType["data"]["dishIndicator"][0],
+    "name" | "successOrders"
+  >[];
+}) {
+  const chartDateColors = useMemo(
+    () =>
+      chartData.map((data, index) => {
+        return {
+          ...data,
+          fill: colors[index] ?? colors[colors.length - 1],
+        };
+      }),
+    [chartData]
+  );
   return (
     <Card>
       <CardHeader>
@@ -61,7 +76,7 @@ export function DishBarChart({ data }: DishBarChartProps) {
         <ChartContainer config={chartConfig}>
           <BarChart
             accessibilityLayer
-            data={data}
+            data={chartDateColors}
             layout="vertical"
             margin={{
               left: 0,
@@ -77,29 +92,18 @@ export function DishBarChart({ data }: DishBarChartProps) {
                 return value;
               }}
             />
-            <XAxis
-              type="number"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(value) => `${value}`}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
+            <XAxis dataKey="successOrders" type="number" hide />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             <Bar
               dataKey="successOrders"
-              fill="var(--color-desktop)"
-              barSize={24}
-              radius={[8, 8, 0, 0]}
+              name={"Đơn thanh toán"}
+              layout="vertical"
+              radius={5}
             />
           </BarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        {/* Optional footer content */}
-      </CardFooter>
+      <CardFooter className="flex-col items-start gap-2 text-sm"></CardFooter>
     </Card>
   );
 }

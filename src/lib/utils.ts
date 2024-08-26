@@ -11,6 +11,7 @@ import { TokenPayload } from "@/types/jwt.types";
 import guestApiRequest from "@/apiRequest/guest";
 import { format } from "date-fns";
 import { BookX, CookingPot, HandCoins, Loader, Truck } from "lucide-react";
+import { io } from "socket.io-client";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -67,6 +68,7 @@ export const removeTokensFromLocalStorage = () => {
 export const checkAndRefreshToken = async (param?: {
   onError?: () => void;
   onSuccess?: () => void;
+  force?: boolean;
 }) => {
   const accessToken = getAccessTokenFromLocalStorage();
   const refreshToken = getRefreshTokenFromLocalStorage();
@@ -86,8 +88,9 @@ export const checkAndRefreshToken = async (param?: {
     return param?.onError && param.onError();
   }
   if (
+    param?.force ||
     decodedAccessToken.exp - now <
-    (decodedAccessToken.exp - decodedAccessToken.iat) / 3
+      (decodedAccessToken.exp - decodedAccessToken.iat) / 3
   ) {
     try {
       const role = decodeToken(refreshToken).role;

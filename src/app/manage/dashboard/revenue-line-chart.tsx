@@ -1,8 +1,11 @@
 "use client";
+
+import { TrendingUp } from "lucide-react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -14,29 +17,30 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { format, parse } from "date-fns";
-
-interface RevenueLineChartProps {
-  data: { date: string; revenue: number }[];
-}
-
+import { DashboardIndicatorResType } from "@/schemaValidations/indicator.schema";
 const chartConfig = {
   desktop: {
     label: "Desktop",
-    color: "hsl(var(--chart-1))",
+    color: "#007BFF",
   },
 } satisfies ChartConfig;
 
-export function RevenueLineChart({ data }: RevenueLineChartProps) {
+export function RevenueLineChart({
+  chartData,
+}: {
+  chartData: DashboardIndicatorResType["data"]["revenueByDate"];
+}) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Doanh thu</CardTitle>
+        {/* <CardDescription>January - June 2024</CardDescription> */}
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
           <LineChart
             accessibilityLayer
-            data={data}
+            data={chartData}
             margin={{
               left: 12,
               right: 12,
@@ -49,10 +53,10 @@ export function RevenueLineChart({ data }: RevenueLineChartProps) {
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => {
-                if (data.length < 8) {
+                if (chartData.length < 8) {
                   return value;
                 }
-                if (data.length < 33) {
+                if (chartData.length < 33) {
                   const date = parse(value, "dd/MM/yyyy", new Date());
                   return format(date, "dd");
                 }
@@ -74,7 +78,12 @@ export function RevenueLineChart({ data }: RevenueLineChartProps) {
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
-        {/* Optional footer content */}
+        {/* <div className='flex gap-2 font-medium leading-none'>
+          Trending up by 5.2% this month <TrendingUp className='h-4 w-4' />
+        </div>
+        <div className='leading-none text-muted-foreground'>
+          Showing total visitors for the last 6 months
+        </div> */}
       </CardFooter>
     </Card>
   );
