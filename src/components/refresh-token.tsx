@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import { checkAndRefreshToken } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -13,7 +13,9 @@ const UNAUTHENTICATED_PATH = [
 ];
 
 export default function RefreshToken() {
-  const { socket, setSocket, disConectSocket } = useAppContext();
+  const setSocket = useAppStore((state) => state.setSocket);
+  const socket = useAppStore((state) => state.socket);
+  const disConectSocket = useAppStore((state) => state.disConectSocket);
   const pathname = usePathname();
   const router = useRouter();
   useEffect(() => {

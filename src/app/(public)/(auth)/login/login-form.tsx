@@ -18,9 +18,8 @@ import { toast } from "@/components/ui/use-toast";
 import { handleErrorApi, removeTokensFromLocalStorage } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import { useAppContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import envConfig from "@/config";
-import { io } from "socket.io-client";
 import { generateSocketInstace } from "@/lib/common";
 import Link from "next/link";
 
@@ -45,7 +44,8 @@ export default function LoginForm() {
   const loginMutation = useLoginMutation();
   const searchParams = useSearchParams();
   const clearToken = searchParams.get("clearTokens");
-  const { setRole, setSocket } = useAppContext();
+  const setRole = useAppStore((state) => state.setRole);
+  const setSocket = useAppStore((state) => state.setSocket);
   const router = useRouter();
   useEffect(() => {
     if (clearToken) {

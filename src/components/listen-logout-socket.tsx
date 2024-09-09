@@ -1,4 +1,4 @@
-import { useAppContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import { handleErrorApi } from "@/lib/utils";
 import { useLogoutMutation } from "@/queries/useAuth";
 import { usePathname, useRouter } from "next/navigation";
@@ -6,7 +6,10 @@ import React, { useEffect } from "react";
 const UNAUTHENTICATED_PATH = ["/login", "/logout", "/refresh-token"];
 
 export default function ListenLogoutSocket() {
-  const { socket, setRole, disConectSocket } = useAppContext();
+  const socket = useAppStore((state) => state.socket);
+  const setRole = useAppStore((state) => state.setRole);
+  const disConectSocket = useAppStore((state) => state.disConectSocket);
+
   const { isPending, mutateAsync } = useLogoutMutation();
   const pathname = usePathname();
   const router = useRouter();

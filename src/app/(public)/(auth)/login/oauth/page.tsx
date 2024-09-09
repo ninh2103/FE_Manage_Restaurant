@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import { toast } from "@/components/ui/use-toast";
 import { generateSocketInstace } from "@/lib/common";
 import { decodeToken } from "@/lib/utils";
@@ -12,7 +12,8 @@ export default function OauthPage() {
   const count = useRef(0);
   const router = useRouter();
   const { mutateAsync } = useSetTokenToCookieMutation();
-  const { setRole, setSocket } = useAppContext();
+  const setSocket = useAppStore((state) => state.setSocket);
+  const setRole = useAppStore((state) => state.setRole);
   const searchParams = useSearchParams();
   const accessToken = searchParams.get("accessToken");
   const refreshToken = searchParams.get("refreshToken");
